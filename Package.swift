@@ -8,7 +8,7 @@ let package = Package(
         .library(name: "AcornMemoryWorker", targets: ["AcornMemoryWorker"]),
     ],
     dependencies: [
-        .package(path: "../Acorn"),
+        .package(url: "https://github.com/treehauslabs/Acorn.git", from: "1.0.0"),
     ],
     targets: [
         .target(
