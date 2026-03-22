@@ -1,13 +1,22 @@
 {
-  "originHash" : "6010eb3f723e9cb1f6000baa4e84f47137a2e3113801b11318dbedd8f3bc3292",
+  "originHash" : "72e32619be79931033f763da3c0ff370e55ee5e9289390b864d5862ae8dfbbe9",
   "pins" : [
+    {
+      "identity" : "acorn",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/treehauslabs/Acorn.git",
+      "state" : {
+        "revision" : "bf32b99dbff973acea1c38135db88d850db4e611",
+        "version" : "1.1.0"
+      }
+    },
     {
       "identity" : "swift-asn1",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-asn1.git",
       "state" : {
-        "revision" : "810496cf121e525d660cd0ea89a758740476b85f",
-        "version" : "1.5.1"
+        "revision" : "9f542610331815e29cc3821d3b6f488db8715517",
+        "version" : "1.6.0"
       }
     },
     {

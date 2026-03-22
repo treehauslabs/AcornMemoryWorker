@@ -1,5 +1,7 @@
 import Foundation
+#if canImport(os)
 import os
+#endif
 import Acorn
 
 public actor MemoryCASWorker: AcornCASWorker {
@@ -7,7 +9,7 @@ public actor MemoryCASWorker: AcornCASWorker {
     public var near: (any AcornCASWorker)?
     public var far: (any AcornCASWorker)?
 
-    internal let _state: OSAllocatedUnfairLock<State>
+    internal let _state: LockedMemoryState
 
     public init(
         capacity: Int? = nil,
@@ -23,7 +25,7 @@ public actor MemoryCASWorker: AcornCASWorker {
         } else if maxBytes != nil {
             cache = LFUDecayCache(capacity: .max, halfLife: halfLife, sampleSize: sampleSize)
         }
-        self._state = OSAllocatedUnfairLock(initialState: State(cache: cache, maxBytes: maxBytes))
+        self._state = LockedMemoryState(initialState: State(cache: cache, maxBytes: maxBytes))
     }
 
     public func has(cid: ContentIdentifier) -> Bool {
@@ -128,3 +130,34 @@ extension MemoryCASWorker {
         }
     }
 }
+
+#if canImport(os)
+struct LockedMemoryState: Sendable {
+    private let _lock: OSAllocatedUnfairLock<MemoryCASWorker.State>
+
+    init(initialState: MemoryCASWorker.State) {
+        _lock = OSAllocatedUnfairLock(initialState: initialState)
+    }
+
+    @inline(__always)
+    func withLock<T: Sendable>(_ body: @Sendable (inout MemoryCASWorker.State) throws -> T) rethrows -> T {
+        try _lock.withLock(body)
+    }
+}
+#else
+final class LockedMemoryState: @unchecked Sendable {
+    private var _state: MemoryCASWorker.State
+    private let _lock = NSLock()
+
+    init(initialState: MemoryCASWorker.State) {
+        _state = initialState
+    }
+
+    @inline(__always)
+    func withLock<T>(_ body: (inout MemoryCASWorker.State) throws -> T) rethrows -> T {
+        _lock.lock()
+        defer { _lock.unlock() }
+        return try body(&_state)
+    }
+}
+#endif
